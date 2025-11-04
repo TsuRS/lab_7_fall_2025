@@ -160,18 +160,21 @@ class StateMachineNode(Node):
             forward_vel_command = 0.0
         
         elif self.state == State.SEARCH:
-            # TODO: Implement search behavior
-            # - Set yaw_command to rotate in the direction where the target was last seen
-            # - Use SEARCH_YAW_VEL and rotate opposite to the sign of self.target_pos
-            # - Keep forward_vel_command = 0.0 (don't move forward while searching)
-            pass  # TODO: Implement SEARCH state behavior
+            # Set yaw_command to rotate in the direction where the target was last seen
+            # Use SEARCH_YAW_VEL and rotate opposite to the sign of self.target_pos
+            # Keep forward_vel_command = 0.0 (don't move forward while searching)
+            if self.target_pos is not None:
+                yaw_command = -SEARCH_YAW_VEL if self.target_pos > 0 else SEARCH_YAW_VEL
+            else:
+                yaw_command = SEARCH_YAW_VEL
+            forward_vel_command = 0.0
         
         elif self.state == State.TRACK:
-            # TODO: Implement tracking behavior using proportional control
-            # - Set yaw_command using a proportional controller: -self.target_pos * KP
-            # - This will turn the robot to center the target in the camera view
-            # - Set forward_vel_command to TRACK_FORWARD_VEL to move toward the target
-            pass  # TODO: Implement TRACK state behavior
+            # Set yaw_command using a proportional controller: -self.target_pos * KP
+            # This will turn the robot to center the target in the camera view
+            # Set forward_vel_command to TRACK_FORWARD_VEL to move toward the target
+            yaw_command = -self.target_pos * KP
+            forward_vel_command = TRACK_FORWARD_VEL
 
         cmd = Twist()
         cmd.angular.z = yaw_command
