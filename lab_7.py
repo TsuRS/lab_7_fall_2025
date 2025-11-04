@@ -147,7 +147,8 @@ class StateMachineNode(Node):
         else:
             # Calculate time difference and convert from nanoseconds to seconds
             current_time = self.get_clock().now()
-            time_since_detection = (current_time - self.last_detection_time)
+            time_diff = current_time - self.last_detection_time
+            time_since_detection = time_diff.nanoseconds / 1e9
         
         if time_since_detection > TIMEOUT:  # Check if detection is too old
             self.state = State.SEARCH
