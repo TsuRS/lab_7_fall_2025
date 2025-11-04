@@ -142,7 +142,7 @@ class StateMachineNode(Node):
         # - Otherwise, transition to State.TRACK
         # If no detection yet, use a large value to trigger search
         # Calculate time difference and convert from nanoseconds to seconds
-        current_time = self.get_clock().now() 
+        current_time = self.get_clock().now().nanoseconds
         time_since_detection = (current_time - self.last_detection_time.nanoseconds) / 1e9
         
         if time_since_detection > TIMEOUT:  # Check if detection is too old
