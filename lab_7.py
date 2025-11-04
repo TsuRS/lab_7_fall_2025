@@ -7,6 +7,7 @@ from std_msgs.msg import String
 import numpy as np
 import sys
 import os
+import time
 
 # Add pupper_llm to path
 sys.path.append(os.path.dirname(__file__))
@@ -139,9 +140,12 @@ class StateMachineNode(Node):
         # - Convert the time difference from nanoseconds to seconds
         # - If time_since_detection > TIMEOUT, transition to State.SEARCH
         # - Otherwise, transition to State.TRACK
-        time_since_detection = pass  # TODO: Calculate time since last detection
+        # If no detection yet, use a large value to trigger search
+        # Calculate time difference and convert from nanoseconds to seconds
+        current_time = self.get_clock().now().nanoseconds
+        time_since_detection = (current_time - self.last_detection_time.nanoseconds) / 1e9
         
-        if False:  # TODO: Replace with condition checking
+        if time_since_detection > TIMEOUT:  # Check if detection is too old
             self.state = State.SEARCH
         else:
             self.state = State.TRACK
