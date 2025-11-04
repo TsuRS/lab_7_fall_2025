@@ -79,7 +79,13 @@ class KarelRealtimeCommanderNode(Node):
         #     ["move", "turn_left", "bark"]
 
         # Your code here:
-        pass
+        # Your code here:
+        lines = response.split("\n")
+        for line in lines:
+            if line != "":
+                command = self.extract_commands_from_line(line.strip())
+                for command_elem in command:
+                    all_commands.append(command_elem)
 
         
         if all_commands:
@@ -129,7 +135,28 @@ class KarelRealtimeCommanderNode(Node):
             line = "<move, turn_left>"
             returns ['move', 'turn_left']
         """
-        pass
+        command_dict = {
+            "start_tracking": "start_tracking",
+            "stop_tracking": "stop_tracking",
+            "move_forwards": "move_forward", 
+            "move_backwards": "move_backward", 
+            "move_left": "move_left", 
+            "move_right": "move_right", 
+            "turn_left": "turn_left", 
+            "turn_right": "turn_right", 
+            "bob": "bob", 
+            "wiggle": "wiggle", 
+            "dance": "dance",
+            "bark": "bark"
+        }
+        if "start_tracking" in line:
+            return ["track_" + line[line.find('[')+1:line.find(']')].strip()]
+        elif line in command_dict:
+            return [command_dict[line]]
+        else:
+            logger.info("ERROR: INVALID COMMAND ENTERED")
+
+
     
     async def execute_command(self, command: str) -> bool:
         """Execute a single robot command."""
@@ -143,13 +170,36 @@ class KarelRealtimeCommanderNode(Node):
             #   Use: object_name = command.split("_", 1)[1]
             # - If command is "stop_tracking", call self.pupper.end_tracking()
             # - Use await asyncio.sleep(0.5) after each tracking command
-            
+            if "track_" in command:
+                obj_name = command[6:]
+                self.pupper.begin_tracking(object_name)
+                asyncio.sleep(0.5)
+            elif command == "stop_tracking":
+                self.pupper.end_tracking()
+                asyncio.sleep(0.5)
+
             # TODO: Paste your Lab 6 command mapping implementation below
             # Implement the mapping from canonical command names (e.g., "move", "turn_left", "bark", etc.) to the appropriate KarelPupper action and its timing.
             # One complete mapping is shown as an example!
-            if command in ["move", "go", "forward"]:
+            if command in ["move_forward", "go", "forward"]:
                 self.pupper.move_forward()
                 await asyncio.sleep(0.5)  # Hint: Use await asyncio.sleep(seconds) to pace each action!
+            elif command in ["move_backward"]:
+                self.pupper.move_backward()
+                await asyncio.sleep(0.5)
+            elif command in ["move_right"]:
+                self.pupper.move_right()
+                await asyncio.sleep(0.5)
+            elif command in ["move_left"]:
+                self.pupper.move_left()
+                await asyncio.sleep(0.5)
+            elif command in ["turn_right"]:
+                self.pupper.turn_right()
+                await asyncio.sleep(0.5)
+            elif command in ["turn_left"]:
+                self.pupper.turn_left()
+                await asyncio.sleep(0.5)
+
             # TODO: Add additional elifs for the other actions that KarelPupper supports,
             #       calling the correct pupper method, and using an appropriate sleep time after each command.
             # For example:
@@ -158,8 +208,19 @@ class KarelRealtimeCommanderNode(Node):
             #   - For "dance" actions, the full dance is ~12.0 seconds; use await asyncio.sleep(12.0)
             #   - For most normal moves and turns, use 0.5 seconds.
             # See the KarelPupper API for supported commands and their method names.
-                pass
-            
+            elif command in ["wiggle"]:
+                self.pupper.wiggle()
+                await asyncio.sleep(5.5)
+            elif command in ["bob"]:
+                self.pupper.bob()
+                await asyncio.sleep(5.5)
+            elif command in ["dance"]:
+                self.pupper.dance()
+                await asyncio.sleep(12.0)
+            elif command in ["bark"]:
+                self.pupper.bark()
+                await asyncio.sleep(1.0)
+
             else:
                 logger.warning(f"⚠️  Unknown command: {command}")
                 return False
