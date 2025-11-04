@@ -7,6 +7,7 @@ from std_msgs.msg import String
 import numpy as np
 import sys
 import os
+import time
 
 # Add pupper_llm to path
 sys.path.append(os.path.dirname(__file__))
@@ -86,8 +87,6 @@ class StateMachineNode(Node):
     def detection_callback(self, msg):
         """
         Process incoming detections to identify and track the most central object.
-        
-        TODO: Implement detection processing
         - Check if any detections exist in msg.detections
         - Calculate the normalized center position for each detection (x-coordinate / IMAGE_WIDTH - 0.5)
         - Initially, find the detection closest to the image center (smallest absolute normalized position)
@@ -95,7 +94,34 @@ class StateMachineNode(Node):
         - Store the normalized position in self.target_pos
         - Update self.last_detection_time with the current timestamp
         """
-        pass  # TODO: Implement detection callback
+        if len(msg.detections) == 0:
+            return
+
+        if self.last_detection_pos is None:
+            # First detection: find closest to image center (x = IMAGE_WIDTH / 2)
+            best_detection = None
+            min_distance = float('inf')
+            for detection in msg.detections:
+                distance = abs(detection.bbox.center.position.x - IMAGE_WIDTH / 2)
+                if distance < min_distance:
+                    min_distance = distance
+                    best_detection = detection
+        else:
+            # Subsequent detections: find closest to last position (track same object)
+            best_detection = None
+            min_distance = float('inf')
+            for detection in msg.detections:
+                distance = abs(detection.bbox.center.position.x - self.last_detection_pos)
+                if distance < min_distance:
+                    min_distance = distance
+                    best_detection = detection
+
+        x_coord = best_detection.bbox.center.position.x
+        normalized_x = x_coord / IMAGE_WIDTH - 0.5
+
+        self.last_detection_pos = x_coord
+        self.target_pos = normalized_x
+        self.last_detection_time = msg.header.stamp
 
     def timer_callback(self):
         """
@@ -114,9 +140,12 @@ class StateMachineNode(Node):
         # - Convert the time difference from nanoseconds to seconds
         # - If time_since_detection > TIMEOUT, transition to State.SEARCH
         # - Otherwise, transition to State.TRACK
-        time_since_detection = pass  # TODO: Calculate time since last detection
+        # If no detection yet, use a large value to trigger search
+        # Calculate time difference and convert from nanoseconds to seconds
+        current_time = self.get_clock().now().nanoseconds
+        time_since_detection = (current_time - self.last_detection_time.nanoseconds) / 1e9
         
-        if False:  # TODO: Replace with condition checking
+        if time_since_detection > TIMEOUT:  # Check if detection is too old
             self.state = State.SEARCH
         else:
             self.state = State.TRACK
