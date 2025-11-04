@@ -120,7 +120,7 @@ class StateMachineNode(Node):
 
         self.last_detection_pos = x_coord
         self.target_pos = normalized_x
-        self.last_detection_time = msg.detections[0].header.stamp
+        self.last_detection_time = msg.header.stamp
 
     def timer_callback(self):
         """
