@@ -48,7 +48,12 @@ class KarelPupper:
         - Call rclpy.spin_once(self.node, timeout_sec=0.1) to ensure message is sent
         - Log the action: self.node.get_logger().info(f'Started tracking: {obj}')
         """
-        pass  # TODO: Implement begin_tracking
+        self.tracking_enabled = True
+        self.tracking_object = obj
+        msg.data = f"start:{obj}"
+        self.tracking_control_publisher.publish(msg)
+        rclpy.spin_once(self.node, timeout_sec=0.1)
+        self.node.get_logger().info(f'Started tracking:{obj}')
         
     def end_tracking(self):
         """
@@ -65,7 +70,13 @@ class KarelPupper:
         - Call self.stop() to halt movement
         - Log the action: self.node.get_logger().info('Stopped tracking')
         """
-        pass  # TODO: Implement end_tracking
+        self.tracking_enabled = False
+        self.tracking_object = None
+        msg.data = "stop"
+        self.tracking_control_publisher.publish(msg)
+        rclpy.spin_once(self.node, timeout_sec=0.1)
+        self.stop()
+        self.node.get_logger().info('Stopped tracking')
 
     def move(self, linear_x, linear_y, angular_z):
         move_cmd = Twist()
@@ -130,59 +141,98 @@ class KarelPupper:
         Remove the 'pass' statement after you implement the steps above.
         """
         # ==== TODO: Paste your Lab 6 implementation here ====
-        pass
+        if play_sound:
+            pygame.mixer.init()
+            current_dir = os.path.dirname(os.path.abspath(__file__))
+            sounds_dir = os.path.join(current_dir, '..', '..', 'sounds')
+            wav_path = os.path.join(sounds_dir, 'puppy_bob.wav')
+            wav_path = os.path.normpath(wav_path)
+            
+            try:
+                bob_sound = pygame.mixer.Sound(wav_path)
+                bob_sound.play()
+                self.node.get_logger().info(f'Playing bob sound from: {wav_path}')
+            except Exception as e:
+                self.node.get_logger().warning(f"Could not play bob sound: {e}")
+
+
+        move_cmd = Twist()
+        move_cmd.linear.y = 0.0
+        move_cmd.angular.z = 0.0
+        # Alternate movement directions for a total of 1 second
+        single_bob_duration = 0.3  # seconds per half-wiggle
+        bob_speed = 0.35
+        
+        start_time = time.time()
+        direction = 1
+        while time.time() - start_time < bob_time:
+            move_cmd.linear.x = direction * bob_speed
+            self.publisher.publish(move_cmd)
+            rclpy.spin_once(self.node, timeout_sec=0.01)
+            time.sleep(single_bob_duration)
+            direction *= -1  # Switch direction
+        
+        self.stop()
+
+        self.node.get_logger().info('Bob!')
 
         self.node.get_logger().info('Bob!')
 
     def move_forward(self):
         """
-        TODO: Paste your implementation from Lab 6
+        TODO: Implement moving Pupper forward.
         - Decide on an appropriate linear.x speed for safe forward movement.
         - Use the move() helper function that is implemented above, or manually construct move_cmd = Twist().
         - Publish the Twist command for a set duration, then stop.
         """
-        pass
+        self.move(1.0, 0.0, 0.0)
+        self.node.get_logger().info("Finished running move_forward...")
 
     def move_backward(self):
         """
-        TODO: Paste your implementation from Lab 6
+        TODO: Implement moving Pupper backward.
         - Decide on a negative linear.x value for safe backward movement.
         - Use move() or create your own Twist message.
         - Be careful with speed—backward motion is often best slower.
         """
-        pass
+        self.move(-1.0, 0.0, 0.0)
+        self.node.get_logger().info("Finished running move_backward...")
 
     def move_left(self):
         """
-        TODO: Paste your implementation from Lab 6
+        TODO: Implement moving Pupper to the left (translation).
         - Set an appropriate linear.y value for left strafe.
         - Use move() or build the move_cmd yourself.
         """
-        pass
+        self.move(0.0, 1.0, 0.0)
+        self.node.get_logger().info("Finished running move_left...")
 
     def move_right(self):
         """
-        TODO: Paste your implementation from Lab 6
+        TODO: Implement moving Pupper to the right (translation).
         - Set an appropriate negative linear.y value for right strafe.
         - Use move() or create your own move_cmd.
         """
-        pass
+        self.move(0.0, -1.0, 0.0)
+        self.node.get_logger().info("Finished running move_right...")
 
     def turn_left(self):
         """
-        TODO: Paste your implementation from Lab 6
+        TODO: Implement turning Pupper left (rotation).
         - Set a positive angular.z value for left rotation.
         - Use move() or build your own move_cmd.
         """
-        pass
+        self.move(0.0, 0.0, 1.0)
+        self.node.get_logger().info("Finished running turn_left...")
 
     def turn_right(self):
         """
-        TODO: Paste your implementation from Lab 6
+        TODO: Implement turning Pupper right (rotation).
         - Set a negative angular.z value for right rotation.
         - Use move() or make your own Twist message.
         """
-        pass
+        self.move(0.0, 0.0, -1.0)
+        self.node.get_logger().info("Finished running turn_right...")
 
     def bark(self):
         self.node.get_logger().info('Bark...')
@@ -212,10 +262,16 @@ class KarelPupper:
         dance_sound = pygame.mixer.Sound(dance_sound_path)
         self.node.get_logger().info(f'Playing dance sound from: {dance_sound_path}')
         dance_sound.play()
-        # TODO: Paste your awesome dance choreography from Lab 6!
+        # TODO: Create your own awesome Pupper dance move sequence here!
         # Use combinations of self.wiggle(), self.turn_left(), self.turn_right(), self.bob(), and self.stop().
         # Be creative and choreograph the most exciting dance possible!
-        pass
+        self.wiggle()
+        self.turn_left()
+        self.turn_right()
+        self.bob()
+        self.turn_left()
+        self.turn_right()
+        self.wiggle()
 
 
     def stop(self):
