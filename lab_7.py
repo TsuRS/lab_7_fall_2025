@@ -57,9 +57,9 @@ class StateMachineNode(Node):
         self.tracking_enabled = False
 
         # Initialize member variables to track detection state
-        self.last_detection_pos = None # Store the last detection in the image so that we choose the closest detection in this frame
+        self.last_detection_pos = None  # Store the last detection in the image so that we choose the closest detection in this frame
         self.target_pos = 0  # Store the target's normalized position in the image (range: -0.5 to 0.5, where 0 is center)
-        self.last_detection_time = 1000000  # Store the timestamp of the most recent detection for timeout checking
+        self.last_detection_time = None  # Store the timestamp of the most recent detection for timeout checking
         
         self.get_logger().info('State Machine Node initialized in IDLE state.')
         self.get_logger().info('Use begin_tracking(object) to enable tracking.')
@@ -135,15 +135,19 @@ class StateMachineNode(Node):
             self.state = State.IDLE
             return
         
-        #  Implement state transition logic based on detection timeout
-        # - Calculate time_since_detection by subtracting self.last_detection_time from current time
-        # - Convert the time difference from nanoseconds to seconds
-        # - If time_since_detection > TIMEOUT, transition to State.SEARCH
-        # - Otherwise, transition to State.TRACK
+        # Implement state transition logic based on detection timeout
+        # Calculate time_since_detection by subtracting self.last_detection_time from current time
+        # Convert the time difference from nanoseconds to seconds
+        # If time_since_detection > TIMEOUT, transition to State.SEARCH
+        # Otherwise, transition to State.TRACK
+        
         # If no detection yet, use a large value to trigger search
-        # Calculate time difference and convert from nanoseconds to seconds
-        current_time = self.get_clock().now().nanoseconds
-        time_since_detection = (current_time - self.last_detection_time.nanoseconds) / 1e9
+        if self.last_detection_time is None:
+            time_since_detection = float('inf')
+        else:
+            # Calculate time difference and convert from nanoseconds to seconds
+            current_time = self.get_clock().now().nanoseconds
+            time_since_detection = (current_time - self.last_detection_time.nanoseconds) / 1e9
         
         if time_since_detection > TIMEOUT:  # Check if detection is too old
             self.state = State.SEARCH
