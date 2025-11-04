@@ -135,7 +135,7 @@ class StateMachineNode(Node):
             self.state = State.IDLE
             return
         
-        # TODO: Implement state transition logic based on detection timeout
+        #  Implement state transition logic based on detection timeout
         # - Calculate time_since_detection by subtracting self.last_detection_time from current time
         # - Convert the time difference from nanoseconds to seconds
         # - If time_since_detection > TIMEOUT, transition to State.SEARCH
