@@ -121,7 +121,7 @@ class StateMachineNode(Node):
 
         self.last_detection_pos = x_coord
         self.target_pos = normalized_x
-        self.last_detection_time = self.get_clock().now()
+        self.last_detection_time = time.time()
 
     def timer_callback(self):
         """
@@ -146,7 +146,7 @@ class StateMachineNode(Node):
             time_since_detection = float('inf')
         else:
             # Calculate time difference and convert from nanoseconds to seconds
-            time_diff = self.get_clock().now() - self.last_detection_time
+            time_diff = time.time() - self.last_detection_time
             time_since_detection = time_diff.nanoseconds / 1e9
         
         if time_since_detection > TIMEOUT:  # Check if detection is too old
