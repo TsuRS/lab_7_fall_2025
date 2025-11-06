@@ -172,7 +172,7 @@ class KarelRealtimeCommanderNode(Node):
             # - Use await asyncio.sleep(0.5) after each tracking command
             if "track_" in command:
                 obj_name = command[6:]
-                self.pupper.begin_tracking(object_name)
+                self.pupper.begin_tracking(obj_name)
                 asyncio.sleep(0.5)
             elif command == "stop_tracking":
                 self.pupper.end_tracking()
