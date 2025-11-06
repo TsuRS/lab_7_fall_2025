@@ -118,20 +118,63 @@ class KarelRealtimeCommanderNode(Node):
         try:
             logger.info(f"⚙️  Executing {command}")
             
-            # TODO: Implement the mapping from canonical command names (e.g., "move", "turn_left", "bark", etc.) to the appropriate KarelPupper action and its timing.
-            # One complete mapping is shown as an example!
-            if command in ["move", "go", "forward"]:
+            # Movement commands
+            if command in ["move", "go", "forward", "move_forward"]:
                 self.pupper.move_forward()
-                await asyncio.sleep(0.5)  # Hint: Use await asyncio.sleep(seconds) to pace each action!
-            # TODO: Add additional elifs for the other actions that KarelPupper supports,
-            #       calling the correct pupper method, and using an appropriate sleep time after each command.
-            # For example:
-            #   - For "wiggle"/"wag" actions, the total animation can take ~5.5 seconds; use await asyncio.sleep(5.5)
-            #   - For "bob" actions, the action can take ~5.5 seconds; use await asyncio.sleep(5.5)
-            #   - For "dance" actions, the full dance is ~12.0 seconds; use await asyncio.sleep(12.0)
-            #   - For most normal moves and turns, use 0.5 seconds.
-            # See the KarelPupper API for supported commands and their method names.
-                pass
+                await asyncio.sleep(0.5)
+            
+            elif command in ["back", "backward", "move_backward", "reverse"]:
+                self.pupper.move_backward()
+                await asyncio.sleep(0.5)
+            
+            elif command in ["left", "move_left", "strafe_left"]:
+                self.pupper.move_left()
+                await asyncio.sleep(0.5)
+            
+            elif command in ["right", "move_right", "strafe_right"]:
+                self.pupper.move_right()
+                await asyncio.sleep(0.5)
+            
+            # Turning commands
+            elif command in ["turn_left", "rotate_left", "spin_left"]:
+                self.pupper.turn_left()
+                await asyncio.sleep(0.5)
+            
+            elif command in ["turn_right", "rotate_right", "spin_right"]:
+                self.pupper.turn_right()
+                await asyncio.sleep(0.5)
+            
+            # Animation commands
+            elif command in ["wiggle", "wag", "shake"]:
+                self.pupper.wiggle()
+                await asyncio.sleep(5.5)
+            
+            elif command in ["bob", "bounce"]:
+                self.pupper.bob()
+                await asyncio.sleep(5.5)
+            
+            elif command in ["dance", "rick_roll", "rickroll"]:
+                self.pupper.dance()
+                await asyncio.sleep(12.0)
+            
+            # Sound commands
+            elif command in ["bark", "woof", "speak"]:
+                self.pupper.bark()
+                await asyncio.sleep(0.5)
+            
+            # Control commands
+            elif command in ["stop", "halt", "wait"]:
+                self.pupper.stop()
+                await asyncio.sleep(0.5)
+            
+            # Tracking commands (Lab 7)
+            elif command in ["begin_tracking", "start_tracking", "track"]:
+                self.pupper.begin_tracking("person")
+                await asyncio.sleep(0.5)
+            
+            elif command in ["end_tracking", "stop_tracking", "untrack"]:
+                self.pupper.end_tracking()
+                await asyncio.sleep(0.5)
             
             else:
                 logger.warning(f"⚠️  Unknown command: {command}")
