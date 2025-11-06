@@ -149,10 +149,17 @@ class StateMachineNode(Node):
             time_diff = time.time() - self.last_detection_time
             time_since_detection = time_diff
         
+        # Track previous state to detect transitions
+        previous_state = self.state
+        
         if time_since_detection > TIMEOUT:  # Check if detection is too old
             self.state = State.SEARCH
         else:
             self.state = State.TRACK
+        
+        # Print debug message when state changes
+        if previous_state != self.state:
+            self.get_logger().info(f'🔄 State transition: {previous_state.name} → {self.state.name}')
 
         # Execute state behavior
         yaw_command = 0.0
