@@ -54,7 +54,7 @@ class KarelPupper:
         msg.data = f"start:{obj}"
         self.tracking_control_publisher.publish(msg)
         rclpy.spin_once(self.node, timeout_sec=0.1)
-        self.node.get_logger().info(f'Started tracking:{obj}')
+        self.node.get_logger().info(f'Started tracking: {obj}')
         
     def end_tracking(self):
         """

@@ -135,8 +135,15 @@ class KarelRealtimeCommanderNode(Node):
             line = "<move, turn_left>"
             returns ['move', 'turn_left']
         """
+        commands = []
+        
+        # Handle start_tracking with [object] syntax first
+        if "start_tracking" in line and '[' in line and ']' in line:
+            obj_name = line[line.find('[')+1:line.find(']')].strip()
+            commands.append("track_" + obj_name)
+        
+        # Define command keywords and their canonical forms
         command_dict = {
-            "start_tracking": "start_tracking",
             "stop_tracking": "stop_tracking",
             "move_forwards": "move_forward", 
             "move_backwards": "move_backward", 
@@ -149,12 +156,16 @@ class KarelRealtimeCommanderNode(Node):
             "dance": "dance",
             "bark": "bark"
         }
-        if "start_tracking" in line:
-            return ["track_" + line[line.find('[')+1:line.find(']')].strip()]
-        elif line in command_dict:
-            return [command_dict[line]]
-        else:
-            logger.info("ERROR: INVALID COMMAND ENTERED")
+        
+        # Search for each command keyword in the line
+        for keyword, canonical_command in command_dict.items():
+            if keyword in line:
+                commands.append(canonical_command)
+        
+        if not commands:
+            logger.debug(f"No commands found in line: {line}")
+        
+        return commands
 
 
     
